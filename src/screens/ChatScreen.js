@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, TouchableWithoutFeedback, Platform, Keyboard, StyleSheet } from 'react-native'
+import { View, TouchableWithoutFeedback, Platform, Keyboard, AppState, StyleSheet } from 'react-native'
 import KeyboardSpacer from 'react-native-keyboard-spacer'
 import { GiftedChat } from 'react-native-gifted-chat'
 import Fire from '../utils/Fire'
@@ -7,15 +7,42 @@ import Fire from '../utils/Fire'
 function Chat({ navigation }) {
 
     const [messages, setMessages] = useState([])
+    const [appState, setAppState] = useState(AppState.currentState)
 
-    useEffect(() => {
+    _handleAppStateChange = nextAppState => {
+        console.log(nextAppState)
+        if (nextAppState.match(/inactive|background/)) {
+            unsuscribe()
+        } else if (nextAppState.match(/active/)) {
+            getMessages()
+        }
+        setAppState(nextAppState)
+      };
+
+    unsuscribe = () => {
+        setMessages([])
+        Fire.shared.off()
+    }
+
+    getMessages = () => {
         Fire.shared.on(
             message => setMessages(
                 prevMessages => GiftedChat.append(prevMessages, message)
             )
         )
+    }
+
+    useEffect(() => {
+        getMessages()
         return () => {
-            Fire.shared.off()
+            unsuscribe()
+        };
+    }, [])
+
+    useEffect(() => {
+        AppState.addEventListener('change', this._handleAppStateChange)
+        return () => {
+            AppState.removeEventListener('change', this._handleAppStateChange)
         };
     }, [])
 

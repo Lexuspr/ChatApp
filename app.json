@@ -25,6 +25,8 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "description": "Chat App using GiftedChat",
+    "githubUrl": "https://github.com/Lexuspr/ChatApp"
   }
 }

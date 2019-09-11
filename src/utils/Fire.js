@@ -32,19 +32,26 @@ class Fire {
 
     get ref() { return this.db.collection('messages') }
 
-    on = callback => this.unsuscribe = this.ref.orderBy('createdAt').limit(20).onSnapshot( snapshot => {
-        const changes = snapshot.docChanges()
-        changes.forEach(change => {
-            if(change.type === 'added')
-                callback(this.parse(change))
-        });
-    })
+    on = callback => {
+        console.log('on')
+        this.unsuscribe = this.ref.orderBy('createdAt').limit(40).onSnapshot( snapshot => {
+            const changes = snapshot.docChanges()
+            console.log(changes.length)
+            changes.forEach(change => {
+                if(change.type === 'added')
+                    callback(this.parse(change))
+            });
+        }, error => {
+            console.log(error)
+            Alert.alert('Error: ', error)
+        })
+    }
 
     parse = ({ doc }) => {
         const { createdAt: numberStamp, text, user } = doc.data()
         const { id: _id } = doc
         const createdAt = numberStamp.toDate()
-
+        
         const message = {
             _id,
             createdAt,
@@ -55,7 +62,10 @@ class Fire {
         return message
     }
 
-    off = () => this.unsuscribe()
+    off = () => {
+        console.log('off')
+        this.unsuscribe()
+    }
 
     get uid() { return (firebase.auth().currentUser || {}).uid}
 
